@@ -8,6 +8,10 @@ contract ChainList {
     string description;
     uint256 price;
 
+    function ChainList() public {
+        sellArticle("Default article", "This is an article set by default", 1000000000000000000);
+    }
+
     // Sell an article
     function sellArticle(string _name, string _description, uint256 _price) public {
         // Getting the address of the account from the user who called this function
