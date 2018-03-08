@@ -10,13 +10,16 @@ contract ChainList {
 
     // Sell an article
     function sellArticle(string _name, string _description, uint256 _price) public {
-        // Ge5tting the address of the account from the user who called this function
+        // Getting the address of the account from the user who called this function
         seller = msg.sender;
 
+        // Setting the name of the article
         name = _name;
 
+        // Setting the description
         description = _description;
 
+        // Setting the price at which to sell the article
         price = _price;
     }
 
@@ -27,7 +30,7 @@ contract ChainList {
         string _description, 
         uint256 _price
         ) {
-        
+            // We can return multiple values in solidity so that's nice
             return(seller, name, description, price);
         }
 }
