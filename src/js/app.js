@@ -95,7 +95,30 @@ App = {
            }).catch(function(err){
                  console.log(err.message);
            })
-     }
+     },
+
+     sellArticle: function() {
+            // Retrieve article details
+            var _article_name = $('#article_name').val();
+            var _article_description = $('#article_description').val();
+            var _article_price = web3.toWei(parseFloat($('#article_price').val() || 0), "ether");
+
+            if((_article_name.trim() == '' || (_article_price == 0))) {
+                  // Nothing to sell
+                  return false;
+            }
+
+            App.contracts.ChainList.deployed().then(function(instance){
+                  return instance.sellArticle(_article_name, _article_description, _article_price, {
+                        from: App.account,
+                        gas: 500000
+                  });
+            }).then(function(result){
+                  App.reloadArticles();
+            }).catch(function(err){
+                  console.log(err);
+            });
+      }
 };
 
 $(function() {
