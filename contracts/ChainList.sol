@@ -8,8 +8,15 @@ contract ChainList {
     string description;
     uint256 price;
 
+    // Events Section
+    event LogSellArticle(
+        address indexed _seller,
+        string _name,
+        uint _price
+    );
+
     // function ChainList() public {
-    //     sellArticle("Default article", "This is an article set by default", 1000000000000000000);
+    //     sellArticle("Default article", "This is an article set by default", ß1000000000000000000);
     // }
 
     // Sell an article
@@ -25,6 +32,9 @@ contract ChainList {
 
         // Setting the price at which to sell the article
         price = _price;
+
+        // Calling our Event
+        LogSellArticle(seller, name, price);
     }
 
     // Get an article
