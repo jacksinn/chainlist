@@ -43,8 +43,9 @@ contract ChainList {
         string _name, 
         string _description, 
         uint256 _price
-        ) {
+        ) 
+        {
             // We can return multiple values in solidity so that's nice
-            return(seller, name, description, price);
-        }
+        return(seller, name, description, price);
+    }
 }
