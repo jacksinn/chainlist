@@ -48,13 +48,14 @@ contract ChainList {
     // Get an article
     function getArticle() public view returns (
         address _seller, 
+        address _buyer,
         string _name, 
         string _description, 
         uint256 _price
         ) 
         {
             // We can return multiple values in solidity so that's nice
-        return(seller, name, description, price);
+        return(seller, buyer, name, description, price);
     }
 
     // Buy an article
