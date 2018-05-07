@@ -4,6 +4,7 @@ contract ChainList {
 
     // State variables
     address seller;
+    address buyer;
     string name;
     string description;
     uint256 price;
@@ -13,6 +14,13 @@ contract ChainList {
         address indexed _seller,
         string _name,
         uint _price
+    );
+
+    event LogBuyArticle(
+        address indexed _seller,
+        address indexed _buyer,
+        string _name,
+        uint256 _price
     );
 
     // function ChainList() public {
@@ -47,5 +55,29 @@ contract ChainList {
         {
             // We can return multiple values in solidity so that's nice
         return(seller, name, description, price);
+    }
+
+    // Buy an article
+    function buyArticle() payable public {
+        // Check if there is an article for sale
+        require(seller != 0x0);
+
+        // Check that the article has not been sold yet
+        require(buyer == 0x0);
+
+        // Do not allow the seller to buy it's own article
+        require(msg.sender != seller);
+
+        // Check that the value sent corresponds to the price of the article
+        require(msg.value == price);
+
+        // Record buyer's information
+        buyer = msg.sender;
+
+        // Buyer pays the seller
+        seller.transfer(msg.value);
+
+        // Trigger the event
+        LogBuyArticle(seller, buyer, name, price);
     }
 }
