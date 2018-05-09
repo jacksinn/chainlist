@@ -1,84 +1,112 @@
 pragma solidity ^0.4.18;
 
+
 contract ChainList {
+    // Custom types
+    struct Article {
+        uint id;
+        address seller;
+        address buyer;
+        string name;
+        string description;
+        uint256 price;
+    }
 
     // State variables
-    address seller;
-    address buyer;
-    string name;
-    string description;
-    uint256 price;
+    mapping (uint => Article) public articles;
+    uint articleCounter;
 
     // Events Section
     event LogSellArticle(
+        uint indexed _id,
         address indexed _seller,
         string _name,
         uint _price
     );
 
     event LogBuyArticle(
+        uint indexed _id,
         address indexed _seller,
         address indexed _buyer,
         string _name,
         uint256 _price
     );
 
-    // function ChainList() public {
-    //     sellArticle("Default article", "This is an article set by default", ß1000000000000000000);
-    // }
-
     // Sell an article
     function sellArticle(string _name, string _description, uint256 _price) public {
-        // Getting the address of the account from the user who called this function
-        seller = msg.sender;
+        // Increment article counter
+        articleCounter++;
 
-        // Setting the name of the article
-        name = _name;
-
-        // Setting the description
-        description = _description;
-
-        // Setting the price at which to sell the article
-        price = _price;
+        articles[articleCounter] = Article(
+            articleCounter,
+            msg.sender,
+            0x0,
+            _name,
+            _description,
+            _price
+        );
 
         // Calling our Event
-        LogSellArticle(seller, name, price);
+        LogSellArticle(articleCounter, msg.sender, _name, _price);
     }
 
-    // Get an article
-    function getArticle() public view returns (
-        address _seller, 
-        address _buyer,
-        string _name, 
-        string _description, 
-        uint256 _price
-        ) 
-        {
-            // We can return multiple values in solidity so that's nice
-        return(seller, buyer, name, description, price);
+    // Fetch the number of articles in the contract
+    function getNumberOfArticles() public view returns (uint) {
+        return articleCounter;
+    }
+
+    // Fetch and return all article IDs for articles still for sale
+    function getArticlesForSale() public view returns (uint[]) {
+        // Prepare output array
+        uint[] memory articleIDs = new uint[](articleCounter);
+
+        uint numberOfArticlesForSale = 0;
+
+        // Iterate over articles
+        for (uint i = 1; i <= articleCounter; i++) {
+            // Keep the id if the article is still for sale
+            if (articles[i].buyer == 0x0) {
+                articleIDs[numberOfArticlesForSale] = articles[i].id;
+                numberOfArticlesForSale++;
+            }
+        }
+
+        // Copy the articleIDs array into a smaller forSale array
+        uint[] memory forSale = new uint[](numberOfArticlesForSale);
+        for (uint j = 0; j < numberOfArticlesForSale; j++) {
+            forSale[j] = articleIDs[j];
+        }
+
+        return forSale;
     }
 
     // Buy an article
-    function buyArticle() payable public {
+    function buyArticle(uint _id) public payable {
         // Check if there is an article for sale
-        require(seller != 0x0);
+        require(articleCounter > 0);
+
+        // Check that the article exists
+        require(_id > 0 && _id <= articleCounter);
+
+        // We retrieve the article from the mapping
+        Article storage article = articles[_id];
 
         // Check that the article has not been sold yet
-        require(buyer == 0x0);
+        require(article.buyer == 0x0);
 
         // Do not allow the seller to buy it's own article
-        require(msg.sender != seller);
+        require(msg.sender != article.seller);
 
         // Check that the value sent corresponds to the price of the article
-        require(msg.value == price);
+        require(msg.value == article.price);
 
         // Record buyer's information
-        buyer = msg.sender;
+        article.buyer = msg.sender;
 
         // Buyer pays the seller
-        seller.transfer(msg.value);
+        article.seller.transfer(msg.value);
 
         // Trigger the event
-        LogBuyArticle(seller, buyer, name, price);
+        LogBuyArticle(_id, article.seller, article.buyer, article.name, article.price);
     }
 }
