@@ -53,4 +53,43 @@ contract("ChainList", function(accounts){
             assert.equal(data[4].toNumber(), web3.toWei(articlePrice, "ether"), "Article Price must be " + articlePrice);        
         });
     });
-});
+
+        // Buying an article for a different price
+        it("should throw an exception if you try to buy for a value different from its price", function(){
+            return ChainList.deployed().then(function(instance){
+                chainListInstance = instance;
+                return chainListInstance.buyArticle({from: buyer, value: web3.toWei(articlePrice + 1, "ether")});
+            }).then(assert.fail).catch(function(error){
+                assert(true);
+            }).then(function(){
+                return chainListInstance.getArticle();
+            }).then(function(data){
+                // And then check to see if these values match our pre-defined values (no data manipulation should occur)
+                assert.equal(data[0], seller, "Seller must be " + seller);
+                assert.equal(data[1], 0x0, "Buyer must be empty");
+                assert.equal(data[2], articleName, "Article Name must be " + articleName);
+                assert.equal(data[3], articleDescription, "Article Description must be " + articleDescription);
+                assert.equal(data[4].toNumber(), web3.toWei(articlePrice, "ether"), "Article Price must be " + articlePrice);        
+            });
+        });
+
+        // Article has already been sold
+        it("should throw an exception if you try to buy an article that was already sold", function(){
+            return ChainList.deployed().then(function(instance){
+                chainListInstance = instance;
+                return chainListInstance.buyArticle({from: buyer, value: web3.toWei(articlePrice, "ether")});
+            }).then(function(){
+                return chainListInstance.buyArticle({from: buyer, value: web3.toWei(articlePrice, "ether")});
+            }).then(assert.fail).catch(function(error){
+                assert(true);
+            }).then(function(){
+                return chainListInstance.getArticle();
+            }).then(function(data){
+                // And then check to see if these values match our pre-defined values (no data manipulation should occur)
+                assert.equal(data[0], seller, "Seller must be " + seller);
+                assert.equal(data[1], buyer, "Buyer must be " + buyer);
+                assert.equal(data[2], articleName, "Article Name must be " + articleName);
+                assert.equal(data[3], articleDescription, "Article Description must be " + articleDescription);
+                assert.equal(data[4].toNumber(), web3.toWei(articlePrice, "ether"), "Article Price must be " + articlePrice);        
+            });
+        });});
