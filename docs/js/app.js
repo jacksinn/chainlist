@@ -170,7 +170,7 @@ App = {
             });
       },
 
-      buyArticle: function () {
+      buyArticle: function (event) {
             event.preventDefault();
 
             // Retrieve the article price
