@@ -33,16 +33,19 @@ contract ChainList {
         uint256 _price
     );
 
+    // Modifiers
+    modifier onlyOwner() {
+        require(msg.sender == owner);
+        _;
+    }
+
     // Constructor
     function ChainList() public {
         owner = msg.sender;
     }
 
     // Deactivate the contract
-    function kill() public {
-        // only allow the contract owner to call this
-        require(msg.sender == owner);
-
+    function kill() public onlyOwner {
         selfdestruct(owner);
     }
 
