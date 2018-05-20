@@ -13,6 +13,7 @@ contract ChainList {
     }
 
     // State variables
+    address owner;
     mapping (uint => Article) public articles;
     uint articleCounter;
 
@@ -31,6 +32,19 @@ contract ChainList {
         string _name,
         uint256 _price
     );
+
+    // Constructor
+    function ChainList() public {
+        owner = msg.sender;
+    }
+
+    // Deactivate the contract
+    function kill() public {
+        // only allow the contract owner to call this
+        require(msg.sender == owner);
+
+        selfdestruct(owner);
+    }
 
     // Sell an article
     function sellArticle(string _name, string _description, uint256 _price) public {
