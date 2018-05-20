@@ -2,6 +2,7 @@ App = {
       web3Provider: null,
       contracts: {},
       account: 0x0,
+      loading: false,
 
       init: function () {
             //     // load articles
@@ -66,57 +67,36 @@ App = {
       },
 
       reloadArticles: function () {
+            // Avoid rea-entry
+            if (App.loading) {
+                  return;
+            }
+            App.loading = true;
             // Refresh account information because the balance might have changed
             App.displayAccountInfo();
 
-            // Retrieve the article placeholder and clear it
-            $('#articlesRow').empty();
+            var chainListInstance;
 
             App.contracts.ChainList.deployed().then(function (instance) {
-                  return instance.getArticle();
-            }).then(function (article) {
-                  if (article[0] == 0x0) {
-                        // No article to display
-                        return;
+                  chainListInstance = instance;
+                  return chainListInstance.getArticlesForSale();
+            }).then(function (articleIds) {
+
+                  // Retrieve the article placeholder and clear it
+                  $('#articlesRow').empty();
+
+                  for (var i = 0; i < articleIds.length; i++) {
+                        var articleId = articleIds[i];
+                        chainListInstance.articles(articleId.toNumber()).then(function (article) {
+                              App.displayArticle(article[0], article[1], article[3], article[4], article[5]);
+                        });
                   }
 
-                  var price = web3.fromWei(article[4], 'ether');
-
-                  // Retrieve the article template and fill it with data
-                  var articleTemplate = $('#articleTemplate');
-                  articleTemplate.find('.panel-title').text(article[2]);
-                  articleTemplate.find('.article-description').text(article[3]);
-                  articleTemplate.find('.article-price').text(price);
-                  articleTemplate.find('.btn-buy').attr('data-value', price);
-
-                  var seller = article[0];
-                  if (seller == App.account) {
-                        seller = "You";
-                  }
-                  articleTemplate.find('.article-seller').text(seller);
-
-                  // Display the buyer
-                  var buyer = article[1];
-                  if (buyer == App.account) {
-                        buyer = "You";
-                  } else if (buyer == 0x0) {
-                        buyer = "No one yet";
-                  }
-
-                  articleTemplate.find('.article-buyer').text(buyer);
-
-                  // Buy button should not appear if you're the owner or if it's already sold
-                  if (article[0] == App.account || article[1] != 0x0) {
-                        articleTemplate.find('.btn-buy').hide();
-                  } else {
-                        articleTemplate.find('.btn-buy').show();
-                  }
-
-                  // Add this article to articles row
-                  $('#articlesRow').append(articleTemplate.html());
+                  App.loading = false;
 
             }).catch(function (err) {
                   console.log(err.message);
+                  App.loading = false;
             });
       },
 
@@ -167,7 +147,7 @@ App = {
 
       buyArticle: function () {
             event.preventDefault();
-            
+
             // Retrieve the article price
             var _price = parseFloat($(event.target).data('value'));
 
